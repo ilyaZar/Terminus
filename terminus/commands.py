@@ -16,42 +16,39 @@ from .utils import shlex_split
 from .view import get_panel_window, get_panel_name, panel_is_visible, view_is_visible
 
 
-KEYS = [
-    "ctrl+k",
-    "ctrl+p"
-]
+KEYS = ["ctrl+k", "ctrl+p"]
 
-logger = logging.getLogger('Terminus')
+logger = logging.getLogger("Terminus")
 
 
 class TerminusOpenCommand(sublime_plugin.WindowCommand):
     def run(self, **kwargs):
-        sublime.set_timeout_async(lambda: self.run_async(**kwargs))
+        self.run_async(**kwargs)
 
     def run_async(
-            self,
-            config_name=None,
-            cmd=None,
-            shell_cmd=None,
-            cwd=None,
-            working_dir=None,
-            env={},
-            title=None,
-            show_in_panel=None,
-            panel_name=None,
-            focus=True,
-            tag=None,
-            file_regex=None,
-            line_regex=None,
-            pre_window_hooks=[],
-            post_window_hooks=[],
-            post_view_hooks=[],
-            view_settings={},
-            auto_close=True,
-            cancellable=False,
-            reactivable=True,
-            timeit=False,
-            paths=[],
+        self,
+        config_name=None,
+        cmd=None,
+        shell_cmd=None,
+        cwd=None,
+        working_dir=None,
+        env={},
+        title=None,
+        show_in_panel=None,
+        panel_name=None,
+        focus=True,
+        tag=None,
+        file_regex=None,
+        line_regex=None,
+        pre_window_hooks=[],
+        post_window_hooks=[],
+        post_view_hooks=[],
+        view_settings={},
+        auto_close=True,
+        cancellable=False,
+        reactivable=True,
+        timeit=False,
+        paths=[],
     ):
         config = None
 
@@ -77,7 +74,10 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
 
         if config and "cmd" in config and "shell_cmd" in config:
             raise Exception(
-                "both `cmd` are `shell_cmd` are specified in config {}".format(config_name))
+                "both `cmd` are `shell_cmd` are specified in config {}".format(
+                    config_name
+                )
+            )
 
         if cmd and shell_cmd:
             raise Exception("both `cmd` are `shell_cmd` are passed to terminus_open")
@@ -98,7 +98,6 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
                 cmd_to_run = ["/usr/bin/env", "bash", "-c", shell_cmd]
 
         elif cmd is not None or ("cmd" in config and config["cmd"]):
-
             if cmd is None:
                 cmd = config["cmd"]
 
@@ -134,7 +133,12 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
             if "TERM" not in _env:
                 _env["TERM"] = settings.get("unix_term", "linux")
 
-            if _env["TERM"] not in ["linux", "xterm", "xterm-16color", "xterm-256color"]:
+            if _env["TERM"] not in [
+                "linux",
+                "xterm",
+                "xterm-16color",
+                "xterm-256color",
+            ]:
                 raise Exception("{} is not supported.".format(_env["TERM"]))
 
             if "LANG" not in _env:
@@ -146,8 +150,10 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
         _env.update(env)
 
         #  force prompt-toolkit to use 256 color
-        if "PROMPT_TOOLKIT_COLOR_DEPTH" not in os.environ \
-                and "PROMPT_TOOLKIT_COLOR_DEPTH" not in _env:
+        if (
+            "PROMPT_TOOLKIT_COLOR_DEPTH" not in os.environ
+            and "PROMPT_TOOLKIT_COLOR_DEPTH" not in _env
+        ):
             _env["PROMPT_TOOLKIT_COLOR_DEPTH"] = "DEPTH_8_BIT"
 
         # paths is passed if this was invoked from the side bar context menu
@@ -235,7 +241,8 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
                 "file_regex": file_regex,
                 "line_regex": line_regex,
                 "view_settings": view_settings,
-            })
+            },
+        )
 
         if show_in_panel:
             window.run_command("show_panel", {"panel": "output.{}".format(panel_name)})
@@ -274,10 +281,16 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
             ok_configs = [default_config] + ok_configs
 
         self.window.show_quick_panel(
-            [[config["name"],
-              config["cmd"] if isinstance(config["cmd"], str) else config["cmd"][0]]
-             for config in ok_configs],
-            lambda x: on_selection_shell(x)
+            [
+                [
+                    config["name"],
+                    config["cmd"]
+                    if isinstance(config["cmd"], str)
+                    else config["cmd"][0],
+                ]
+                for config in ok_configs
+            ],
+            lambda x: on_selection_shell(x),
         )
 
         def on_selection_shell(index):
@@ -288,7 +301,7 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
             sublime.set_timeout(
                 lambda: self.window.show_quick_panel(
                     ["Open in Tab", "Open in Panel"],
-                    lambda x: on_selection_method(x, config_name)
+                    lambda x: on_selection_method(x, config_name),
                 )
             )
 
@@ -353,11 +366,7 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
 
     def _default_config(self):
         if sys.platform.startswith("win"):
-            return {
-                "name": "Command Prompt",
-                "cmd": "cmd.exe",
-                "env": {}
-            }
+            return {"name": "Command Prompt", "cmd": "cmd.exe", "env": {}}
         else:
             if "SHELL" in os.environ:
                 shell = os.environ["SHELL"]
@@ -368,15 +377,10 @@ class TerminusOpenCommand(sublime_plugin.WindowCommand):
             else:
                 cmd = ["/bin/bash", "-i", "-l"]
 
-            return {
-                "name": "Login Shell",
-                "cmd": cmd,
-                "env": {}
-            }
+            return {"name": "Login Shell", "cmd": cmd, "env": {}}
 
 
 class TerminusCloseCommand(sublime_plugin.TextCommand):
-
     def run(self, _):
         view = self.view
         if not view.settings().get("terminus_view"):
@@ -396,7 +400,6 @@ class TerminusCloseCommand(sublime_plugin.TextCommand):
 
 
 class TerminusCloseAllCommand(sublime_plugin.WindowCommand):
-
     def run(self):
         window = self.window
         views = []
@@ -484,7 +487,8 @@ class TerminusInitializeViewCommand(sublime_plugin.TextCommand):
         terminus_settings = sublime.load_settings("Terminus.sublime-settings")
         view_settings.set(
             "terminus_view.natural_keyboard",
-            terminus_settings.get("natural_keyboard", True))
+            terminus_settings.get("natural_keyboard", True),
+        )
         preserve_keys = terminus_settings.get("preserve_keys", {})
         if not preserve_keys:
             preserve_keys = terminus_settings.get("disable_keys", {})
@@ -538,7 +542,6 @@ class TerminusInitializeViewCommand(sublime_plugin.TextCommand):
 
 
 class TerminusActivateCommand(sublime_plugin.TextCommand):
-
     def run(self, _, **kwargs):
         view = self.view
         view.run_command("terminus_initialize_view", kwargs)
@@ -555,7 +558,7 @@ class TerminusActivateCommand(sublime_plugin.TextCommand):
             tag=kwargs["tag"],
             auto_close=kwargs["auto_close"],
             cancellable=kwargs["cancellable"],
-            timeit=kwargs["timeit"]
+            timeit=kwargs["timeit"],
         )
         recency_manager = RecencyManager.from_view(view)
         if recency_manager:
@@ -574,7 +577,6 @@ class TerminusClearUndoStackCommand(sublime_plugin.TextCommand):
 
 
 class TerminusResetCommand(sublime_plugin.TextCommand):
-
     def run(self, _, soft=False, **kwargs):
         view = self.view
         terminal = Terminal.from_id(view.id())
@@ -604,7 +606,9 @@ class TerminusResetCommand(sublime_plugin.TextCommand):
                     def run_attach():
                         new_view.run_command("terminus_initialize_view", args)
                         terminal.attach_view(new_view)
-                        window.run_command("show_panel", {"panel": "output.{}".format(panel_name)})
+                        window.run_command(
+                            "show_panel", {"panel": "output.{}".format(panel_name)}
+                        )
                         window.focus_view(new_view)
                 else:
                     window = view.window()
@@ -622,15 +626,14 @@ class TerminusResetCommand(sublime_plugin.TextCommand):
                             window.focus_view(new_view)
                         terminal.attach_view(new_view)
 
-                sublime.set_timeout_async(run_attach)
+                run_attach()
 
             sublime.set_timeout(run_sync)
 
-        sublime.set_timeout_async(run_detach)
+        run_detach()
 
 
 class TerminusRenameTitleCommand(sublime_plugin.TextCommand):
-
     def run(self, _, title=None):
         view = self.view
         terminal = Terminal.from_id(view.id())
@@ -663,7 +666,6 @@ class TerminusRenameTitleTextInputerHandler(sublime_plugin.TextInputHandler):
 
 
 class TerminusMaximizeCommand(sublime_plugin.TextCommand):
-
     def is_enabled(self):
         view = self.view
         terminal = Terminal.from_id(view.id())
@@ -689,32 +691,34 @@ class TerminusMaximizeCommand(sublime_plugin.TextCommand):
                 def run_attach():
                     new_view.run_command("terminus_initialize_view")
                     new_view.run_command(
-                        "terminus_insert", {"point": 0, "character": all_text})
+                        "terminus_insert", {"point": 0, "character": all_text}
+                    )
                     terminal.show_in_panel = False
                     terminal.attach_view(new_view, offset)
 
-                sublime.set_timeout_async(run_attach)
+                run_attach()
 
             sublime.set_timeout(run_sync)
 
-        sublime.set_timeout_async(run_detach)
+        run_detach()
 
 
 def dont_close_windows_when_empty(func):
     def f(*args, **kwargs):
-        s = sublime.load_settings('Preferences.sublime-settings')
-        close_windows_when_empty = s.get('close_windows_when_empty')
-        s.set('close_windows_when_empty', False)
+        s = sublime.load_settings("Preferences.sublime-settings")
+        close_windows_when_empty = s.get("close_windows_when_empty")
+        s.set("close_windows_when_empty", False)
         func(*args, **kwargs)
         if close_windows_when_empty:
             sublime.set_timeout(
-                lambda: s.set('close_windows_when_empty', close_windows_when_empty),
-                1000)
+                lambda: s.set("close_windows_when_empty", close_windows_when_empty),
+                1000,
+            )
+
     return f
 
 
 class TerminusMinimizeCommand(sublime_plugin.TextCommand):
-
     def is_enabled(self):
         view = self.view
         terminal = Terminal.from_id(view.id())
@@ -748,22 +752,26 @@ class TerminusMinimizeCommand(sublime_plugin.TextCommand):
                 def run_attach():
                     terminal.show_in_panel = True
                     terminal.panel_name = panel_name
-                    new_view.run_command("terminus_initialize_view", {"panel_name": panel_name})
                     new_view.run_command(
-                        "terminus_insert", {"point": 0, "character": all_text})
-                    window.run_command("show_panel", {"panel": "output.{}".format(panel_name)})
+                        "terminus_initialize_view", {"panel_name": panel_name}
+                    )
+                    new_view.run_command(
+                        "terminus_insert", {"point": 0, "character": all_text}
+                    )
+                    window.run_command(
+                        "show_panel", {"panel": "output.{}".format(panel_name)}
+                    )
                     window.focus_view(new_view)
                     terminal.attach_view(new_view, offset)
 
-                sublime.set_timeout_async(run_attach)
+                run_attach()
 
             sublime.set_timeout(run_sync)
 
-        sublime.set_timeout_async(run_detach)
+        run_detach()
 
 
 class TerminusKeypressCommand(sublime_plugin.TextCommand):
-
     def run(self, _, **kwargs):
         terminal = Terminal.from_id(self.view.id())
         if not terminal or not terminal.process.isalive():
@@ -798,7 +806,9 @@ class TerminusCopyCommand(sublime_plugin.TextCommand):
 class TerminusPasteCommand(sublime_plugin.TextCommand):
     def run(self, edit, bracketed=True):
         copied = sublime.get_clipboard()
-        self.view.run_command("terminus_paste_text", {"text": copied, "bracketed": bracketed})
+        self.view.run_command(
+            "terminus_paste_text", {"text": copied, "bracketed": bracketed}
+        )
 
 
 class TerminusPasteFromHistoryCommand(sublime_plugin.TextCommand):
@@ -806,7 +816,9 @@ class TerminusPasteFromHistoryCommand(sublime_plugin.TextCommand):
         # provide paste choices
         paste_list = g_clipboard_history.get()
         keys = [x[0] for x in paste_list]
-        self.view.show_popup_menu(keys, lambda choice_index: self.paste_choice(choice_index))
+        self.view.show_popup_menu(
+            keys, lambda choice_index: self.paste_choice(choice_index)
+        )
 
     def is_enabled(self):
         return not g_clipboard_history.empty()
@@ -912,7 +924,9 @@ class ToggleTerminusPanelCommand(sublime_plugin.WindowCommand):
 
             panels = self.list_cycle_panels()
             if panels:
-                panel_name = next((p for p in panels if p not in self.cycled_panels), None)
+                panel_name = next(
+                    (p for p in panels if p not in self.cycled_panels), None
+                )
                 if panel_name:
                     self.cycled_panels.append(panel_name)
                 else:
@@ -930,7 +944,9 @@ class ToggleTerminusPanelCommand(sublime_plugin.WindowCommand):
                 window.run_command("hide_panel")
             else:
                 window.run_command(
-                    "show_panel", {"panel": "output.{}".format(panel_name), "toggle": True})
+                    "show_panel",
+                    {"panel": "output.{}".format(panel_name), "toggle": True},
+                )
                 window.focus_view(terminus_view)
         else:
             kwargs["panel_name"] = panel_name
@@ -957,7 +973,7 @@ class ToggleTerminusPanelCommand(sublime_plugin.WindowCommand):
                 panels.append(panel_name)
 
         if active_index != -1:
-            panels = panels[active_index+1:] + panels[:active_index+1]
+            panels = panels[active_index + 1 :] + panels[: active_index + 1]
         else:
             self.cycled_panels[:] = []
             recent_panel_name = recency_manager.recent_panel()
@@ -972,9 +988,7 @@ class ToggleTerminusPanelCommand(sublime_plugin.WindowCommand):
 
 
 class TerminusFindTerminalMixin:
-
     def find_terminal(self, window, tag=None, panel_only=False, visible_only=False):
-
         if tag:
             terminal = Terminal.from_tag(tag)
             if terminal:
@@ -1085,7 +1099,9 @@ class TerminusFindTerminalMixin:
                 return view
 
 
-class TerminusSendStringCommand(TerminusFindTerminalMixin, sublime_plugin.WindowCommand):
+class TerminusSendStringCommand(
+    TerminusFindTerminalMixin, sublime_plugin.WindowCommand
+):
     """
     Send string to a (tagged) terminal
     """
@@ -1099,16 +1115,17 @@ class TerminusSendStringCommand(TerminusFindTerminalMixin, sublime_plugin.Window
             raise Exception("process is terminated")
 
         if terminal.show_in_panel:
-            self.window.run_command("show_panel", {
-                "panel": "output.{}".format(terminal.panel_name)
-            })
+            self.window.run_command(
+                "show_panel", {"panel": "output.{}".format(terminal.panel_name)}
+            )
         else:
             self.bring_view_to_topmost(terminal.view)
 
         # terminal.view.run_command("terminus_render")
         # terminal.view.run_command("terminus_show_cursor")
         terminal.view.run_command(
-            "terminus_paste_text", {"text": string, "bracketed": bracketed})
+            "terminus_paste_text", {"text": string, "bracketed": bracketed}
+        )
 
     def bring_view_to_topmost(self, view):
         # move the view to the top of the group
